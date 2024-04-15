@@ -1,3 +1,9 @@
+*
+!*/
+!*.rs
+!*.toml
+
 /target
 Cargo.lock
 .vscode
+
