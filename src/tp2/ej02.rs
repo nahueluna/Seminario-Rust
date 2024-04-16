@@ -8,7 +8,7 @@ fn es_primo(num: u32) -> bool {
         return false;
     }
 
-    for n in 2..(num - 1) {
+    for n in 2..(num / 2) {
         if num % n == 0 {
             return false;
         }
