@@ -1,13 +1,20 @@
 use std::collections::BTreeMap;
 
-struct Fecha {
+#[derive(PartialEq, Debug)]
+pub struct Fecha {
     dia: u32,
     mes: u32,
     anio: u32,
 }
 
+impl Clone for Fecha {
+    fn clone(&self) -> Self {
+        Fecha::new(self.dia, self.mes, self.anio)
+    }
+}
+
 impl Fecha {
-    fn new(dia: u32, mes: u32, anio: u32) -> Fecha {
+    pub fn new(dia: u32, mes: u32, anio: u32) -> Fecha {
         Fecha { dia, mes, anio }
     }
 
@@ -30,7 +37,7 @@ impl Fecha {
         dias_mes[&mes]
     }
 
-    fn es_fecha_valida(&self) -> bool {
+    pub fn es_fecha_valida(&self) -> bool {
         match self {
             f if f.mes >= 1 && f.mes <= 12 => match self {
                 f if f.dia >= 1 && f.dia <= Fecha::get_dias_mes(f.mes) => true,
@@ -44,7 +51,7 @@ impl Fecha {
 
     // Un año es bisiesto si es divisible por 4. En caso de ser centenario (divisible por 100),
     //ese año debe ser divisible por 400 para ser bisiesto
-    fn es_bisiesto(&self) -> bool {
+    pub fn es_bisiesto(&self) -> bool {
         let anio = self.anio;
         if anio % 4 == 0 {
             if anio % 100 == 0 {
@@ -59,7 +66,7 @@ impl Fecha {
         false
     }
 
-    fn sumar_dias(&mut self, dias: u32) {
+    pub fn sumar_dias(&mut self, dias: u32) {
         self.dia += dias;
 
         while !self.es_fecha_valida() {
@@ -76,7 +83,7 @@ impl Fecha {
         }
     }
 
-    fn restar_dias(&mut self, dias: u32) {
+    pub fn restar_dias(&mut self, dias: u32) {
         let mut dia = self.dia as i32;
         dia -= dias as i32;
 
@@ -97,7 +104,7 @@ impl Fecha {
         self.dia = dia as u32;
     }
 
-    fn es_mayor(&self, fecha: &Fecha) -> bool {
+    pub fn es_mayor(&self, fecha: &Fecha) -> bool {
         match self {
             ref f if f.anio > fecha.anio => true,
             ref f if f.anio == fecha.anio && f.mes > fecha.mes => true,
