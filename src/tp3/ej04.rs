@@ -3,11 +3,21 @@ struct Triangulo {
     lado2: u32,
     lado3: u32,
 }
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 enum TipoTriangulo {
     Equilatero,
     Isosceles,
     Escaleno,
+}
+
+impl TipoTriangulo {
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string().eq(&other.to_string())
+    }
 }
 
 impl Triangulo {
@@ -48,7 +58,7 @@ impl Triangulo {
 fn test_tipo_equilatero() {
     let t = Triangulo::new(6, 6, 6);
 
-    assert_eq!(t.determinar_tipo(), TipoTriangulo::Equilatero);
+    assert!(t.determinar_tipo().eq(&TipoTriangulo::Equilatero));
 
     assert_eq!(t.calcular_perimetro(), 18);
     assert_eq!(t.calcular_area(), 15.588457268119896);
@@ -59,8 +69,8 @@ fn test_tipo_isosceles() {
     let t1 = Triangulo::new(3, 5, 5);
     let t2 = Triangulo::new(4, 4, 8);
 
-    assert_eq!(t1.determinar_tipo(), TipoTriangulo::Isosceles);
-    assert_eq!(t2.determinar_tipo(), TipoTriangulo::Isosceles);
+    assert!(t1.determinar_tipo().eq(&TipoTriangulo::Isosceles));
+    assert!(t2.determinar_tipo().eq(&TipoTriangulo::Isosceles));
 
     assert_eq!(t1.calcular_perimetro(), 13);
     assert_eq!(t1.calcular_area(), 7.1545440106270926);
@@ -73,7 +83,7 @@ fn test_tipo_isosceles() {
 fn test_tipo_escaleno() {
     let t = Triangulo::new(3, 6, 4);
 
-    assert_eq!(t.determinar_tipo(), TipoTriangulo::Escaleno);
+    assert!(t.determinar_tipo().eq(&TipoTriangulo::Escaleno));
 
     assert_eq!(t.calcular_perimetro(), 13);
     assert_eq!(t.calcular_area(), 5.332682251925386);

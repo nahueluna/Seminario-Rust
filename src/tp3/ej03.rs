@@ -1,10 +1,10 @@
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
-#[derive(PartialEq, Debug)]
+#[derive(Debug)]
 pub struct Fecha {
     dia: u32,
     mes: u32,
-    anio: u32,
+    anio: i32,
 }
 
 impl Clone for Fecha {
@@ -14,12 +14,12 @@ impl Clone for Fecha {
 }
 
 impl Fecha {
-    pub fn new(dia: u32, mes: u32, anio: u32) -> Fecha {
+    pub fn new(dia: u32, mes: u32, anio: i32) -> Fecha {
         Fecha { dia, mes, anio }
     }
 
     fn get_dias_mes(mes: u32) -> u32 {
-        let dias_mes = BTreeMap::from([
+        let dias_mes = HashMap::from([
             (1, 31),
             (2, 28),
             (3, 31),
@@ -111,6 +111,14 @@ impl Fecha {
             ref f if f.anio == fecha.anio && f.mes == fecha.mes && f.dia > fecha.dia => true,
             _ => false,
         }
+    }
+
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+
+    pub fn eq(&self, other: &Self) -> bool {
+        self.to_string().eq(&other.to_string())
     }
 }
 

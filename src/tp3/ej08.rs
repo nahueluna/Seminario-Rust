@@ -7,13 +7,23 @@ struct Cancion {
     genero: Generos,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Debug)]
 enum Generos {
     Rock,
     Pop,
     Rap,
     Jazz,
     Otros,
+}
+
+impl Generos {
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string().eq(&other.to_string())
+    }
 }
 
 struct Playlist {
@@ -29,13 +39,13 @@ impl Cancion {
             genero,
         }
     }
-}
 
-impl PartialEq for Cancion {
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+
     fn eq(&self, other: &Self) -> bool {
-        self.titulo.eq(&other.titulo)
-            && self.artista.eq(&other.artista)
-            && self.genero.eq(&other.genero)
+        self.to_string().eq(&other.to_string())
     }
 }
 
@@ -49,7 +59,7 @@ impl Playlist {
     }
 
     fn buscar_cancion(&self, cancion: &Cancion) -> Option<usize> {
-        match self.canciones.iter().position(|song| song == cancion) {
+        match self.canciones.iter().position(|song| song.eq(cancion)) {
             Some(index) => return Some(index),
             None => (),
         }
@@ -94,23 +104,19 @@ impl Playlist {
         None
     }
 
-    fn get_canciones_por_genero(&self, genero: &Generos) -> Option<Vec<&Cancion>> {
+    fn get_canciones_por_genero(&self, genero: &Generos) -> Vec<&Cancion> {
         let mut songs = Vec::new();
 
         self.canciones.iter().for_each(|s| {
-            if s.genero == *genero {
+            if s.genero.eq(genero) {
                 songs.push(s);
             }
         });
 
-        if !songs.is_empty() {
-            Some(songs)
-        } else {
-            None
-        }
+        songs
     }
 
-    fn get_canciones_por_artista(&self, artista: &String) -> Option<Vec<&Cancion>> {
+    fn get_canciones_por_artista(&self, artista: &String) -> Vec<&Cancion> {
         let mut songs = Vec::new();
 
         self.canciones.iter().for_each(|s| {
@@ -119,11 +125,7 @@ impl Playlist {
             }
         });
 
-        if !songs.is_empty() {
-            Some(songs)
-        } else {
-            None
-        }
+        songs
     }
 
     fn modificar_titulo(&mut self, new_title: String) {
@@ -143,16 +145,16 @@ fn test_playlist_vacia() {
 
     // Operaciones con playlist vacia
     assert_eq!(p.buscar_cancion(&c), None);
-    assert_eq!(p.buscar_cancion_por_nombre(&c.titulo), None);
+    assert!(p.buscar_cancion_por_nombre(&c.titulo).is_none());
     assert!(!p.eliminar_cancion(&c));
-    assert_eq!(p.get_canciones_por_artista(&c.artista), None);
-    assert_eq!(p.get_canciones_por_genero(&c.genero), None);
+    assert_eq!(p.get_canciones_por_artista(&c.artista).len(), 0);
+    assert_eq!(p.get_canciones_por_genero(&c.genero).len(), 0);
     assert!(!p.mover_cancion(&c, 15));
 
     // Comprueba que c no haya perdido ownership
     assert_eq!(c.titulo, "Titulo");
     assert_eq!(c.artista, "Artista");
-    assert_eq!(c.genero, Generos::Jazz);
+    assert!(c.genero.eq(&Generos::Jazz));
 }
 
 #[test]
@@ -180,17 +182,19 @@ fn test_playlist1() {
 
     assert_eq!(p.canciones.len(), 5); // Cantidad de canciones
     assert_eq!(p.buscar_cancion(&c2), Some(3)); // Posicion de la cancion
-    assert_eq!(p.buscar_cancion_por_nombre(&c4.titulo), Some(&c4)); // Devuelve la cancion buscada por su titulo
-    assert_eq!(p.get_canciones_por_artista(&c2.artista).unwrap().len(), 2); // Vec con canciones del mismo artista
-    assert_eq!(p.get_canciones_por_genero(&c4.genero).unwrap().len(), 2); // Vec con canciones del mismo género
+    assert!(p
+        .buscar_cancion_por_nombre(&c4.titulo)
+        .is_some_and(|s| s.eq(&c4))); // Devuelve la cancion buscada por su titulo
+    assert_eq!(p.get_canciones_por_artista(&c2.artista).len(), 2); // Vec con canciones del mismo artista
+    assert_eq!(p.get_canciones_por_genero(&c4.genero).len(), 2); // Vec con canciones del mismo género
 
     p.modificar_titulo("Modified title".to_string());
     assert_eq!(p.nombre, "Modified title");
 
     assert!(p.mover_cancion(&c2, 0));
-    assert_eq!(p.canciones.get(0), Some(&c2));
+    assert!(p.canciones.get(0).is_some_and(|s| s.eq(&c2)));
 
-    assert_eq!(p.canciones.get(3).unwrap().genero, Generos::Rock); // Verificar que VecDeque siga teniendo ownership de sus canciones
+    assert!(p.canciones.get(3).unwrap().genero.eq(&Generos::Rock)); // Verificar que VecDeque siga teniendo ownership de sus canciones
 
     assert_eq!(p.canciones.get(4).unwrap().titulo, "Cancion1");
 
@@ -227,7 +231,7 @@ fn test_playlist2() {
         Generos::Otros,
     ));
 
-    let vec_deq = p.get_canciones_por_artista(&"Artista".to_string()).unwrap();
+    let vec_deq = p.get_canciones_por_artista(&"Artista".to_string());
 
     assert_eq!(vec_deq.get(0).unwrap().titulo, "Cancion2");
     assert_eq!(vec_deq.get(1).unwrap().titulo, "Cancion");

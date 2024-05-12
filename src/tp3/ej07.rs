@@ -14,17 +14,7 @@ struct Auto {
     color: Colores,
 }
 
-impl PartialEq for Auto {
-    fn eq(&self, auto: &Auto) -> bool {
-        auto.marca.eq(&self.marca)
-            && auto.modelo.eq(&self.modelo)
-            && auto.anio == self.anio
-            && auto.precio_bruto == self.precio_bruto
-            && auto.color.eq(&self.color)
-    }
-}
-
-#[derive(PartialEq, Debug)]
+#[derive(Debug)]
 enum Colores {
     Rojo,
     Verde,
@@ -32,6 +22,16 @@ enum Colores {
     Amarillo,
     Blanco,
     Negro,
+}
+
+impl Colores {
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string().eq(&other.to_string())
+    }
 }
 
 impl ConcesionarioAuto {
@@ -54,13 +54,13 @@ impl ConcesionarioAuto {
     }
 
     fn eliminar_auto(&mut self, auto: &Auto) {
-        if let Some(index) = self.autos.iter().position(|a| a == auto) {
+        if let Some(index) = self.autos.iter().position(|a| a.eq(auto)) {
             self.autos.remove(index);
         }
     }
 
     fn buscar_auto(&self, auto: &Auto) -> Option<&Auto> {
-        if let Some(index) = self.autos.iter().position(|a| a == auto) {
+        if let Some(index) = self.autos.iter().position(|a| a.eq(auto)) {
             Some(self.autos.get(index).unwrap()) // Estoy seguro de que está en esa posición
         } else {
             None
@@ -101,6 +101,14 @@ impl Auto {
 
         precio_adicional
     }
+
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string().eq(&other.to_string())
+    }
 }
 
 #[test]
@@ -117,7 +125,7 @@ fn test_auto1() {
 
     assert_eq!(a.marca, "BMW");
     assert_eq!(a.modelo, "Modelo");
-    assert_eq!(a.color, Colores::Rojo);
+    assert!(a.color.eq(&Colores::Rojo));
 }
 
 #[test]
@@ -134,7 +142,7 @@ fn test_auto2() {
 
     assert_eq!(a.marca, "Marca");
     assert_eq!(a.modelo, "Modelo");
-    assert_eq!(a.color, Colores::Negro);
+    assert!(a.color.eq(&Colores::Negro));
 }
 
 #[test]
@@ -207,7 +215,7 @@ fn test_concesionario1() {
     assert_eq!(concesionario.autos.len(), 3);
 
     // Busqueda de auto ya eliminado
-    assert_eq!(concesionario.buscar_auto(&a2), None);
+    assert!(concesionario.buscar_auto(&a2).is_none());
 
     let a3 = Auto::new(
         "Marca2".to_string(),
@@ -218,7 +226,7 @@ fn test_concesionario1() {
     );
 
     // Busqueda de auto existente
-    assert_eq!(concesionario.buscar_auto(&a3), Some(&a3));
+    assert!(concesionario.buscar_auto(&a3).is_some_and(|a| a.eq(&a3)));
 
     // Chequea que vec no haya perdido ownership de sus autos
     let precio_auto = concesionario.autos.first().unwrap().calcular_precio();
@@ -238,7 +246,7 @@ fn test_concesionario2() {
         Colores::Negro,
     );
 
-    assert_eq!(concesionario.buscar_auto(&a), None);
+    assert!(concesionario.buscar_auto(&a).is_none());
 
     concesionario.eliminar_auto(&a);
 

@@ -1,7 +1,4 @@
-use std::{
-    collections::VecDeque,
-    ops::{Deref, DerefMut},
-};
+use std::collections::VecDeque;
 
 use super::ej03::Fecha;
 
@@ -21,7 +18,7 @@ struct Mascota {
     duenio: Duenio,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Debug)]
 enum Animales {
     Perro,
     Gato,
@@ -68,7 +65,7 @@ impl Veterinaria {
     }
 
     fn retirar_mascota(&mut self, mascota: &Mascota) -> bool {
-        match self.cola_atencion.iter().position(|m| m == mascota) {
+        match self.cola_atencion.iter().position(|m| m.eq(mascota)) {
             Some(index) => {
                 self.cola_atencion.remove(index);
                 return true;
@@ -102,7 +99,7 @@ impl Veterinaria {
     }
 
     fn get_pos_atencion(&self, atencion: &Atencion) -> Option<usize> {
-        match self.registro_atencion.iter().position(|at| at == atencion) {
+        match self.registro_atencion.iter().position(|at| at.eq(atencion)) {
             Some(index) => return Some(index),
             None => (),
         };
@@ -149,15 +146,6 @@ impl Veterinaria {
     }
 }
 
-impl PartialEq for Mascota {
-    fn eq(&self, other: &Self) -> bool {
-        self.nombre.eq(&other.nombre)
-            && self.edad == other.edad
-            && self.tipo.eq(&other.tipo)
-            && self.duenio.eq(&other.duenio)
-    }
-}
-
 impl Mascota {
     fn new(nombre: String, edad: u32, tipo: Animales, duenio: Duenio) -> Mascota {
         Mascota {
@@ -167,13 +155,13 @@ impl Mascota {
             duenio,
         }
     }
-}
 
-impl PartialEq for Duenio {
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+
     fn eq(&self, other: &Self) -> bool {
-        self.nombre.eq(&other.nombre)
-            && self.direccion.eq(&other.direccion)
-            && self.telefono.eq(&other.telefono)
+        self.to_string().eq(&other.to_string())
     }
 }
 
@@ -185,14 +173,13 @@ impl Duenio {
             telefono,
         }
     }
-}
 
-impl PartialEq for Atencion {
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+
     fn eq(&self, other: &Self) -> bool {
-        self.mascota.eq(&other.mascota)
-            && self.diagnostico.eq(&other.diagnostico)
-            && self.tratamiento.eq(&other.tratamiento)
-            && self.prox_visita.eq(&other.prox_visita) //Fijarse como compara los option
+        self.to_string().eq(&other.to_string())
     }
 }
 
@@ -242,6 +229,14 @@ impl Atencion {
             None => self.prox_visita = fecha,
         };
     }
+
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string().eq(&other.to_string())
+    }
 }
 
 #[test]
@@ -265,15 +260,15 @@ fn test_veterinaria_vacia() {
         None,
     );
 
-    assert_eq!(veterinaria.atender_mascota(), None);
-    assert_eq!(
-        veterinaria.buscar_atencion(
+    assert!(veterinaria.atender_mascota().is_none());
+
+    assert!(veterinaria
+        .buscar_atencion(
             &"Mascota".to_string(),
             &"Duenio".to_string(),
-            &"Telefono".to_string()
-        ),
-        None
-    );
+            &"Telefono".to_string(),
+        )
+        .is_none());
 
     assert!(!veterinaria.modificar_diagnostico(&at1, "Nuevo Diagnostico".to_string()));
     assert!(!veterinaria.modificar_fecha_visita(&at1, Some(Fecha::new(5, 4, 2008))));
@@ -383,19 +378,21 @@ fn test_registrar_atenciones() {
         Some(Fecha::new(29, 2, 2020)),
     ));
 
-    assert_eq!(
-        veterinaria.registro_atencion.first().unwrap().prox_visita,
-        Some(Fecha::new(29, 2, 2020))
-    );
+    assert!(veterinaria
+        .registro_atencion
+        .first()
+        .unwrap()
+        .prox_visita
+        .as_ref()
+        .is_some_and(|f| f.eq(&Fecha::new(29, 2, 2020))));
 
-    assert_eq!(
-        veterinaria.buscar_atencion(
+    assert!(veterinaria
+        .buscar_atencion(
             &"Mascota3".to_string(),
             &"Duenio3".to_string(),
             &"Telefono3".to_string()
-        ),
-        Some(&at1)
-    );
+        )
+        .is_some_and(|f| f.eq(&at1)));
 
     assert!(veterinaria.modificar_fecha_visita(&at1, Some(Fecha::new(1, 2, 2000))));
 
