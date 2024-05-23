@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-#[derive(Debug)]
+use chrono::{DateTime, Datelike, Local, TimeZone, Utc};
+
+#[derive(Debug, PartialEq)]
 pub struct Fecha {
     dia: u32,
     mes: u32,
@@ -16,6 +18,10 @@ impl Clone for Fecha {
 impl Fecha {
     pub fn new(dia: u32, mes: u32, anio: i32) -> Fecha {
         Fecha { dia, mes, anio }
+    }
+
+    pub fn from<Tz: TimeZone>(date: DateTime<Tz>) -> Fecha {
+        Fecha::new(date.day(), date.month(), date.year())
     }
 
     fn get_dias_mes(mes: u32) -> u32 {
@@ -206,4 +212,13 @@ fn test_operaciones_fecha() {
     assert!(!f2.es_bisiesto());
 
     assert!(f1.es_mayor(&f2));
+}
+
+#[test]
+fn test_from_chrono() {
+    let date = Utc.with_ymd_and_hms(2024, 5, 20, 20, 0, 0);
+
+    let f = Fecha::from(date.unwrap());
+
+    assert_eq!(f, Fecha::new(20, 5, 2024));
 }
