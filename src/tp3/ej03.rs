@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Datelike, Local, TimeZone, Utc};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Fecha {
     dia: u32,
     mes: u32,
@@ -17,7 +17,12 @@ impl Clone for Fecha {
 
 impl Fecha {
     pub fn new(dia: u32, mes: u32, anio: i32) -> Fecha {
-        Fecha { dia, mes, anio }
+        let f = Fecha { dia, mes, anio };
+
+        match f {
+            f if f.es_fecha_valida() => f,
+            _ => panic!("Fecha no valida"),
+        }
     }
 
     pub fn from<Tz: TimeZone>(date: DateTime<Tz>) -> Fecha {
@@ -144,6 +149,7 @@ fn test_fecha_valida_bisiesto() {
 }
 
 #[test]
+#[should_panic]
 fn test_fecha_erronea() {
     let f1 = Fecha::new(29, 2, 2021);
 
