@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Datelike, Local, TimeZone, Utc};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct Fecha {
     dia: u32,
     mes: u32,
